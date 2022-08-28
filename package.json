@@ -1,0 +1,27 @@
+{
+  "name": "lazy-cli",
+  "version": "0.0.1",
+  "description": "A CLI to automate mundane things",
+  "main": "src/index.js",
+  "bin": {
+    "lazy": "bin/cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "node bin/cli.js",
+    "lint": "eslint ."
+  },
+  "author": "Lucas Dino Nolte <hello@lucas-nolte.com>",
+  "license": "MIT",
+  "dependencies": {
+    "deepmerge": "^4.2.2",
+    "fs-extra": "^10.1.0",
+    "glob": "^8.0.3",
+    "inquirer": "^9.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.22.0",
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "2.7.1"
+  }
+}

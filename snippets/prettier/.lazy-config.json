@@ -1,0 +1,8 @@
+{
+  "name": "Basic Prettier",
+  "description": "Adds a basic prettier config to your projects",
+  "dependencies": [
+    "eslint",
+    "stylelint"
+  ]
+}

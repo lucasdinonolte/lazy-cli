@@ -1,0 +1,4 @@
+{
+  "name": "Basic Github Workflow",
+  "description": "Lint and run tests inside a github workflow"
+}
