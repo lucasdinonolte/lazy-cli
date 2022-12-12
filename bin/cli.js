@@ -1,3 +1,7 @@
 #!/usr/bin/env node
 import main from '../src/index.js';
-main();
+
+const args = process.argv.slice(2);
+const pathAddon = args[0] || '';
+
+main(pathAddon);

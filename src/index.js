@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import inquirer from 'inquirer';
 import inquirerPrompt from 'inquirer-autocomplete-prompt';
 import fuzzy from 'fuzzy';
@@ -5,8 +7,9 @@ import fuzzy from 'fuzzy';
 import { loadSnippets } from './content.js';
 import { mergeWithSnippet } from './merge.js';
 
-const main = async () => {
+const main = async (pathAddon = '') => {
   const snippets = loadSnippets();
+  const cwd = join(process.cwd(), pathAddon);
 
   inquirer.registerPrompt('autocomplete', inquirerPrompt);
   const { snippet } = await inquirer.prompt([
@@ -42,7 +45,7 @@ const main = async () => {
   }
 
   // Run the merging logic
-  mergeWithSnippet(selectedSnippet, inputs);
+  mergeWithSnippet(selectedSnippet, inputs, { cwd });
 };
 
 export default main;
