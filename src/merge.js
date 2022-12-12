@@ -80,7 +80,7 @@ export const mergeWithSnippet = (snippet, inputs, { cwd }) => {
   const snippetDir = snippet.path;
 
   (snippet.dependencies || []).forEach((dependency) => {
-    mergeWithSnippet(dependency);
+    mergeWithSnippet(dependency, inputs, { cwd });
   });
 
   let templates = [];
