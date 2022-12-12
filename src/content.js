@@ -5,7 +5,11 @@ import glob from 'glob';
 
 import { __dirname } from './paths.js';
 
-import { CONFIG_FILE_NAME, SNIPPETS_PATH } from './constants.js';
+import {
+  CONFIG_FILE_NAME,
+  SNIPPETS_PATH,
+  TEMPLATE_FILE_EXTENSION,
+} from './constants.js';
 
 export const readSnippetConfig = (path, configFile = CONFIG_FILE_NAME) => {
   const configPath = join(path, configFile);
@@ -20,7 +24,8 @@ export const readSnippetFiles = (path, configFile = CONFIG_FILE_NAME) => {
   const files = glob.sync(join(path, '**/*'), { nodir: true, dot: true });
   return files
     .map((file) => file.replace(path, ''))
-    .filter((file) => !file.endsWith(configFile));
+    .filter((file) => !file.endsWith(configFile))
+    .filter((file) => !file.endsWith(TEMPLATE_FILE_EXTENSION));
 };
 
 export const loadSnippets = () => {
@@ -38,7 +43,7 @@ export const loadSnippets = () => {
         {
           name: dirent.name,
         },
-        readSnippetConfig(join(contentDir, dirent.name))
+        readSnippetConfig(join(contentDir, dirent.name)),
       ),
       files: readSnippetFiles(join(contentDir, dirent.name)),
     }));

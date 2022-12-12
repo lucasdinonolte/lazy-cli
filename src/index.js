@@ -24,7 +24,17 @@ const main = async () => {
       )
     : [];
 
-  mergeWithSnippet(selectedSnippet);
+  // Get more prompts from the user if the snippet defined inputs
+  let inputs = null;
+  if (
+    selectedSnippet.config.inputs &&
+    selectedSnippet.config.inputs.length > 0
+  ) {
+    inputs = await inquirer.prompt(selectedSnippet.config.inputs);
+  }
+
+  // Run the merging logic
+  mergeWithSnippet(selectedSnippet, inputs);
 };
 
 export default main;

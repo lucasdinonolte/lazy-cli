@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 import fse from 'fs-extra';
+import Handlebars from 'handlebars';
 
 import deepmerge from 'deepmerge';
 
@@ -43,18 +44,38 @@ function mergeFile(target, source) {
   fse.ensureFileSync(target);
 
   if (!fileMerger) {
-    fse.copySync(source, target);
+    writeFileSync(target, source, 'utf8');
   } else {
     const { merger } = fileMerger;
     const targetFile = readFileSync(target, 'utf8');
-    const sourceFile = readFileSync(source, 'utf8');
-    const mergedFile = merger(targetFile, sourceFile);
+    const mergedFile = merger(targetFile, source);
 
     writeFileSync(target, mergedFile, 'utf8');
   }
 }
 
-export const mergeWithSnippet = (snippet) => {
+const loadFile = (path, { snippetDir, targetDir }) => {
+  const file = readFileSync(join(snippetDir, path), 'utf8');
+  return {
+    file,
+    path: join(targetDir, path),
+  };
+};
+
+const loadTemplate = (template, inputs, { snippetDir, targetDir }) => {
+  const templateFile = join(snippetDir, template.src);
+  const templateCode = readFileSync(templateFile, 'utf8');
+  const templateHbs = Handlebars.compile(templateCode);
+
+  const outFileHbs = Handlebars.compile(join(targetDir, template.dest));
+
+  return {
+    file: templateHbs(inputs),
+    path: outFileHbs(inputs),
+  };
+};
+
+export const mergeWithSnippet = (snippet, inputs) => {
   const targetDir = process.cwd();
   const snippetDir = snippet.path;
 
@@ -62,10 +83,20 @@ export const mergeWithSnippet = (snippet) => {
     mergeWithSnippet(dependency);
   });
 
-  snippet.files.forEach((file) => {
-    const targetFile = join(targetDir, file);
-    const snippetFile = join(snippetDir, file);
+  let templates = [];
+  if (snippet.config.templates && snippet.config.templates.length > 0) {
+    templates = snippet.config.templates.map((template) =>
+      loadTemplate(template, inputs, { snippetDir, targetDir }),
+    );
+  }
 
-    mergeFile(targetFile, snippetFile);
+  const files = snippet.files.map((file) =>
+    loadFile(file, { snippetDir, targetDir }),
+  );
+
+  const allFiles = [...templates, ...files];
+
+  allFiles.forEach(({ file, path }) => {
+    mergeFile(path, file);
   });
 };

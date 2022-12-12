@@ -1,0 +1,21 @@
+{
+  "name": "React Component",
+  "description": "Scaffolds a basic React component with CSS Module",
+  "inputs": [
+    {
+      "name": "name",
+      "type": "text",
+      "message": "What is the name of the component?"
+    }
+  ],
+  "templates": [
+    {
+      "src": "component.template.hbs",
+      "dest": "{{name}}.js"
+    },
+    {
+      "src": "style.template.hbs",
+      "dest": "{{name}}.module.css"
+    }
+  ]
+}
