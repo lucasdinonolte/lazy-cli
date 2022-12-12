@@ -1,4 +1,6 @@
 import inquirer from 'inquirer';
+import inquirerPrompt from 'inquirer-autocomplete-prompt';
+import fuzzy from 'fuzzy';
 
 import { loadSnippets } from './content.js';
 import { mergeWithSnippet } from './merge.js';
@@ -6,12 +8,18 @@ import { mergeWithSnippet } from './merge.js';
 const main = async () => {
   const snippets = loadSnippets();
 
+  inquirer.registerPrompt('autocomplete', inquirerPrompt);
   const { snippet } = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'autocomplete',
       name: 'snippet',
       message: 'Which snippet do you want to run?',
-      choices: snippets.map((s) => ({ value: s.name, name: s.config.name })),
+      source: (_, input) => {
+        const fuzzyResult = fuzzy.filter(input || '', snippets, {
+          extract: (item) => item.name,
+        });
+        return fuzzyResult.map((el) => el.original);
+      },
     },
   ]);
 
