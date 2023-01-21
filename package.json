@@ -9,7 +9,9 @@
   "type": "module",
   "scripts": {
     "dev": "node bin/cli.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "author": "Lucas Dino Nolte <hello@lucas-nolte.com>",
   "license": "MIT",
@@ -24,8 +26,12 @@
     "sade": "^1.8.1"
   },
   "devDependencies": {
+    "@vitest/coverage-c8": "^0.22.0",
+    "@vitest/ui": "^0.22.0",
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^8.5.0",
-    "prettier": "2.7.1"
+    "prettier": "2.7.1",
+    "vite": "^3.0.8",
+    "vitest": "^0.22.0"
   }
 }

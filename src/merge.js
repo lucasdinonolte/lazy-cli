@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import fse from 'fs-extra';
 import Handlebars from 'handlebars';
 
-import deepmerge from 'deepmerge';
+import { jsonMerger, plainMerger } from './fileMergers.js';
 
 const FILE_MERGERS = [
   {
@@ -30,22 +30,7 @@ const COMPARISONS = {
   in: (a, b) => b.includes(a),
 };
 
-function jsonMerger(target, source) {
-  const targetObject = target !== '' ? JSON.parse(target) : {};
-  const sourceObject = source !== '' ? JSON.parse(source) : {};
-  const mergedObject = deepmerge(targetObject, sourceObject);
-
-  return JSON.stringify(mergedObject, null, 2);
-}
-
-function plainMerger(target, source) {
-  const targetEndsWithNewLine = Boolean(target.match(/[\r\n]+$/));
-  const separator = `${targetEndsWithNewLine ? '' : '\n'}\n`;
-
-  return target.concat(separator, source);
-}
-
-function mergeFile(target, source) {
+export const mergeFile = (target, source) => {
   const fileMerger = FILE_MERGERS.find(({ match }) => match.test(target));
 
   console.log(`Merging ${target}`);
@@ -62,9 +47,9 @@ function mergeFile(target, source) {
 
     writeFileSync(target, mergedFile, 'utf8');
   }
-}
+};
 
-const loadFile = (path, { snippetDir, targetDir }) => {
+export const loadFile = (path, { snippetDir, targetDir }) => {
   const file = readFileSync(join(snippetDir, path), 'utf8');
   return {
     file,
@@ -72,7 +57,7 @@ const loadFile = (path, { snippetDir, targetDir }) => {
   };
 };
 
-const includeTemplate = (template, inputs) => {
+export const includeTemplate = (template, inputs) => {
   if (!template.when) return true;
 
   for (const [key, comparison] of Object.entries(template.when)) {
@@ -114,8 +99,6 @@ export const mergeWithSnippet = (snippet, inputs, { cwd }) => {
       .map((template) =>
         loadTemplate(template, inputs, { snippetDir, targetDir }),
       );
-
-    console.log(templates);
   }
 
   const files = snippet.files.map((file) =>
