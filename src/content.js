@@ -11,6 +11,8 @@ import {
   TEMPLATE_FILE_EXTENSION,
 } from './constants.js';
 
+const DEFAULT_SNIPPETS_DIR = join(__dirname, '..', SNIPPETS_PATH);
+
 export const readSnippetConfig = (path, configFile = CONFIG_FILE_NAME) => {
   const configPath = join(path, configFile);
 
@@ -28,8 +30,7 @@ export const readSnippetFiles = (path, configFile = CONFIG_FILE_NAME) => {
     .filter((file) => !file.endsWith(TEMPLATE_FILE_EXTENSION));
 };
 
-export const loadSnippets = () => {
-  const contentDir = join(__dirname, '..', SNIPPETS_PATH);
+export const loadSnippets = (contentDir = DEFAULT_SNIPPETS_DIR) => {
   const foldersInContent = readdirSync(contentDir, { withFileTypes: true });
 
   if (foldersInContent.length === 0) return [];

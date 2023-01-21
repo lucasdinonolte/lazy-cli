@@ -7,9 +7,14 @@ import fuzzy from 'fuzzy';
 import { loadSnippets } from './content.js';
 import { mergeWithSnippet } from './merge.js';
 
-const main = async ({ pathAddon = '' } = {}) => {
-  const snippets = loadSnippets();
+const main = async ({ pathAddon = '', snippetsPath = undefined } = {}) => {
+  const snippets = loadSnippets(snippetsPath);
   const cwd = join(process.cwd(), pathAddon);
+
+  if (snippets.length === 0) {
+    console.log(`No snippets found. Looked in ${snippetsPath}`);
+    return;
+  }
 
   inquirer.registerPrompt('autocomplete', inquirerPrompt);
   const { snippet } = await inquirer.prompt([
