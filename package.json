@@ -1,5 +1,5 @@
 {
-  "name": "lazy-cli",
+  "name": "@lucasdinonolte/lazy-cli",
   "version": "0.0.1",
   "description": "A CLI to automate mundane things",
   "main": "src/index.js",
