@@ -7,7 +7,7 @@ import fuzzy from 'fuzzy';
 import { loadSnippets } from './content.js';
 import { mergeWithSnippet } from './merge.js';
 
-const main = async (pathAddon = '') => {
+const main = async ({ pathAddon = '' } = {}) => {
   const snippets = loadSnippets();
   const cwd = join(process.cwd(), pathAddon);
 
@@ -28,7 +28,7 @@ const main = async (pathAddon = '') => {
 
   const selectedSnippet = snippets.find((s) => s.name === snippet);
 
-  // Resolve depedencies
+  // Resolve dependencies
   selectedSnippet.dependencies = selectedSnippet.config.dependencies
     ? selectedSnippet.config.dependencies.map((d) =>
         snippets.find((s) => s.name === d),

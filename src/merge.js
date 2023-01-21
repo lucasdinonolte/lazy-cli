@@ -20,6 +20,16 @@ const FILE_MERGERS = [
   },
 ];
 
+const COMPARISONS = {
+  eq: (a, b) => a === b,
+  ne: (a, b) => a !== b,
+  gt: (a, b) => a > b,
+  gte: (a, b) => a >= b,
+  lt: (a, b) => a < b,
+  lte: (a, b) => a <= b,
+  in: (a, b) => b.includes(a),
+};
+
 function jsonMerger(target, source) {
   const targetObject = target !== '' ? JSON.parse(target) : {};
   const sourceObject = source !== '' ? JSON.parse(source) : {};
@@ -62,6 +72,20 @@ const loadFile = (path, { snippetDir, targetDir }) => {
   };
 };
 
+const includeTemplate = (template, inputs) => {
+  if (!template.when) return true;
+
+  for (const [key, comparison] of Object.entries(template.when)) {
+    for (const [operator, value] of Object.entries(comparison)) {
+      if (!COMPARISONS[operator](inputs[key], value)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};
+
 const loadTemplate = (template, inputs, { snippetDir, targetDir }) => {
   const templateFile = join(snippetDir, template.src);
   const templateCode = readFileSync(templateFile, 'utf8');
@@ -85,9 +109,13 @@ export const mergeWithSnippet = (snippet, inputs, { cwd }) => {
 
   let templates = [];
   if (snippet.config.templates && snippet.config.templates.length > 0) {
-    templates = snippet.config.templates.map((template) =>
-      loadTemplate(template, inputs, { snippetDir, targetDir }),
-    );
+    templates = snippet.config.templates
+      .filter((template) => includeTemplate(template, inputs))
+      .map((template) =>
+        loadTemplate(template, inputs, { snippetDir, targetDir }),
+      );
+
+    console.log(templates);
   }
 
   const files = snippet.files.map((file) =>
