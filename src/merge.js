@@ -4,6 +4,7 @@ import fse from 'fs-extra';
 import Handlebars from 'handlebars';
 
 import { jsonMerger, plainMerger } from './fileMergers.js';
+import { maybeReadFile } from './util.js';
 
 const FILE_MERGERS = [
   {
@@ -31,22 +32,20 @@ const COMPARISONS = {
 };
 
 export const mergeFile = (target, source) => {
-  const fileMerger = FILE_MERGERS.find(({ match }) => match.test(target));
+  const fileMerger = FILE_MERGERS.find(({ match }) => match.test(target)) ?? {
+    merger: plainMerger,
+  };
 
   console.log(`Merging ${target}`);
 
   // Ensure the target file exists
   fse.ensureFileSync(target);
 
-  if (!fileMerger) {
-    writeFileSync(target, source, 'utf8');
-  } else {
-    const { merger } = fileMerger;
-    const targetFile = readFileSync(target, 'utf8');
-    const mergedFile = merger(targetFile, source);
+  const { merger } = fileMerger;
+  const targetFile = maybeReadFile(target);
+  const mergedFile = merger(targetFile, source);
 
-    writeFileSync(target, mergedFile, 'utf8');
-  }
+  writeFileSync(target, mergedFile, 'utf8');
 };
 
 export const loadFile = (path, { snippetDir, targetDir }) => {
@@ -71,12 +70,12 @@ export const includeTemplate = (template, inputs) => {
   return true;
 };
 
-const loadTemplate = (template, inputs, { snippetDir, targetDir }) => {
+const loadTemplate = (template, inputs, { snippetDir }) => {
   const templateFile = join(snippetDir, template.src);
   const templateCode = readFileSync(templateFile, 'utf8');
   const templateHbs = Handlebars.compile(templateCode);
 
-  const outFileHbs = Handlebars.compile(join(targetDir, template.dest));
+  const outFileHbs = Handlebars.compile(join(template.dest));
 
   return {
     file: templateHbs(inputs),
@@ -85,7 +84,6 @@ const loadTemplate = (template, inputs, { snippetDir, targetDir }) => {
 };
 
 export const mergeWithSnippet = (snippet, inputs, { cwd }) => {
-  const targetDir = '';
   const snippetDir = snippet.path;
 
   (snippet.dependencies || []).forEach((dependency) => {
@@ -96,13 +94,11 @@ export const mergeWithSnippet = (snippet, inputs, { cwd }) => {
   if (snippet.config.templates && snippet.config.templates.length > 0) {
     templates = snippet.config.templates
       .filter((template) => includeTemplate(template, inputs))
-      .map((template) =>
-        loadTemplate(template, inputs, { snippetDir, targetDir }),
-      );
+      .map((template) => loadTemplate(template, inputs, { snippetDir }));
   }
 
   const files = snippet.files.map((file) =>
-    loadFile(file, { snippetDir, targetDir }),
+    loadFile(file, { snippetDir, targetDir: process.cwd() }),
   );
 
   const allFiles = [...templates, ...files];

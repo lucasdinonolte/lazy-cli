@@ -9,8 +9,12 @@ export const jsonMerger = (target, source) => {
 };
 
 export const plainMerger = (target, source) => {
+  if (target === '') return source;
+
   const targetEndsWithNewLine = Boolean(target.match(/[\r\n]+$/));
   const separator = `${targetEndsWithNewLine ? '' : '\n'}\n`;
 
   return target.concat(separator, source);
 };
+
+export const overwriteMerger = (_, source) => source;
