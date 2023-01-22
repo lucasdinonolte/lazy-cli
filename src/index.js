@@ -4,15 +4,18 @@ import inquirer from 'inquirer';
 import inquirerPrompt from 'inquirer-autocomplete-prompt';
 import fuzzy from 'fuzzy';
 
-import { loadSnippets } from './content.js';
+import { loadCustomAndBuiltInSnippets } from './content.js';
 import { mergeWithSnippet } from './merge.js';
+import { getSnippetDir } from './paths.js';
 
 const main = async ({ pathAddon = '', snippetsPath = undefined } = {}) => {
-  const snippets = loadSnippets(snippetsPath);
+  const customSnippetsDir = getSnippetDir(snippetsPath);
+
+  const snippets = loadCustomAndBuiltInSnippets(customSnippetsDir);
   const cwd = join(process.cwd(), pathAddon);
 
   if (snippets.length === 0) {
-    console.log(`No snippets found. Looked in ${snippetsPath}`);
+    console.log(`No snippets found. Looked in ${customSnippetsDir}`);
     return;
   }
 
@@ -50,7 +53,11 @@ const main = async ({ pathAddon = '', snippetsPath = undefined } = {}) => {
   }
 
   // Run the merging logic
-  mergeWithSnippet(selectedSnippet, inputs, { cwd });
+  mergeWithSnippet(
+    selectedSnippet,
+    { ...inputs, snippetsDir: customSnippetsDir },
+    { cwd },
+  );
 };
 
 export default main;

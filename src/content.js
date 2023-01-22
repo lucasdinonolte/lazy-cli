@@ -30,6 +30,13 @@ export const readSnippetFiles = (path, configFile = CONFIG_FILE_NAME) => {
     .filter((file) => !file.endsWith(TEMPLATE_FILE_EXTENSION));
 };
 
+export const loadCustomAndBuiltInSnippets = (customSnippetsDir) => {
+  return [
+    ...loadSnippets(customSnippetsDir),
+    ...loadSnippets(DEFAULT_SNIPPETS_DIR),
+  ];
+};
+
 export const loadSnippets = (contentDir = DEFAULT_SNIPPETS_DIR) => {
   const foldersInContent = readdirSync(contentDir, { withFileTypes: true });
 

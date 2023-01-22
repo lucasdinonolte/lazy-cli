@@ -85,7 +85,7 @@ const loadTemplate = (template, inputs, { snippetDir, targetDir }) => {
 };
 
 export const mergeWithSnippet = (snippet, inputs, { cwd }) => {
-  const targetDir = cwd;
+  const targetDir = '';
   const snippetDir = snippet.path;
 
   (snippet.dependencies || []).forEach((dependency) => {
