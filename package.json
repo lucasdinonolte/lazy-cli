@@ -1,6 +1,6 @@
 {
   "name": "@lucasdinonolte/lazy-cli",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A CLI to automate mundane things",
   "main": "src/index.js",
   "bin": {
