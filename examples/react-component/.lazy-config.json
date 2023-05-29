@@ -24,19 +24,19 @@
   "templates": [
     {
       "src": "component.template.hbs",
-      "dest": "{{directory}}/{{name}}/{{name}}.jsx"
+      "dest": "{{directory}}/{{pascalCase name}}/{{pascalCase name}}.jsx"
     },
     {
       "src": "index.template.hbs",
-      "dest": "{{directory}}/{{name}}/index.js"
+      "dest": "{{directory}}/{{pascalCase name}}/index.js"
     },
     {
       "src": "style.template.hbs",
-      "dest": "{{directory}}/{{name}}/{{name}}.module.css"
+      "dest": "{{directory}}/{{pascalCase name}}/{{pascalCase name}}.module.css"
     },
     {
       "src": "test.template.hbs",
-      "dest": "{{directory}}/{{name}}/{{name}}.test.jsx",
+      "dest": "{{directory}}/{{pascalCase name}}/{{pascalCase name}}.test.jsx",
       "when": {
         "withTest": {
           "eq": true
