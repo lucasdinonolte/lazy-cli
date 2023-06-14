@@ -2,9 +2,11 @@ import { join } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 import fse from 'fs-extra';
 import Handlebars from 'handlebars';
+import filenamify from 'filenamify';
+import slugify from '@sindresorhus/slugify';
 
 import { jsonMerger, plainMerger } from './fileMergers.js';
-import { maybeReadFile } from './util.js';
+import { capitalize, maybeReadFile, camelCase, pascalCase } from './util.js';
 
 const FILE_MERGERS = [
   {
@@ -20,6 +22,14 @@ const FILE_MERGERS = [
     merger: plainMerger,
   },
 ];
+
+const TEMPLATE_HELPERS = {
+  filename: (str) => filenamify(str, { replacement: '_' }),
+  capitalize: capitalize,
+  camelCase: camelCase,
+  pascalCase, pascalCase,
+  slugify: slugify,
+};
 
 const COMPARISONS = {
   eq: (a, b) => a === b,
@@ -73,6 +83,12 @@ export const includeTemplate = (template, inputs) => {
 const loadTemplate = (template, inputs, { snippetDir }) => {
   const templateFile = join(snippetDir, template.src);
   const templateCode = readFileSync(templateFile, 'utf8');
+
+  // Setup helpers for Handlebars
+  Object.entries(TEMPLATE_HELPERS).forEach(([name, fn]) => {
+    Handlebars.registerHelper(name, fn);
+  });
+
   const templateHbs = Handlebars.compile(templateCode);
 
   const outFileHbs = Handlebars.compile(join(template.dest));
