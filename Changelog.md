@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - String helpers (filenamify, capitalize, slugify, camelCase, and pascalCase) for Handlebars templates
 
+### Changed
+
+- **Breaking** Moved templating from handlebars to javascript. This change requires updating existing snippets to the new format, as handlebars template are no longer supported.
+- **Breaking** Moved config file format from JSON to JavaScript object to make configuration more straightforward. This change requires updating the config files of existing snippets to new format.
+
 ## [0.1.0] - 2023-03-20
 
 - First release

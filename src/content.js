@@ -1,5 +1,6 @@
-import { join } from 'path';
-import { readdirSync, existsSync, readFileSync } from 'fs';
+import { basename, join } from 'path';
+import { readdirSync } from 'fs';
+import { loadConfig } from 'unconfig';
 
 import glob from 'glob';
 
@@ -8,53 +9,60 @@ import { __dirname } from './paths.js';
 import {
   CONFIG_FILE_NAME,
   SNIPPETS_PATH,
-  TEMPLATE_FILE_EXTENSION,
+  TEMPLATE_FILE_PREFIX,
 } from './constants.js';
 
 const DEFAULT_SNIPPETS_DIR = join(__dirname, '..', SNIPPETS_PATH);
 
-export const readSnippetConfig = (path, configFile = CONFIG_FILE_NAME) => {
-  const configPath = join(path, configFile);
+export const readSnippetConfig = async (path) => {
+  try {
+    const { config } = await loadConfig({
+      sources: [
+        {
+          files: CONFIG_FILE_NAME,
+          extensions: ['ts', 'mts', 'cts', 'js', 'mjs', 'cjs'],
+        },
+      ],
+      cwd: path,
+      merge: false,
+    });
 
-  if (!existsSync(configPath)) return {};
-  const config = readFileSync(configPath, 'utf8');
-
-  return JSON.parse(config);
+    return config || false;
+  } catch (e) {
+    return false;
+  }
 };
 
-export const readSnippetFiles = (path, configFile = CONFIG_FILE_NAME) => {
+export const readSnippetFiles = (path) => {
   const files = glob.sync(join(path, '**/*'), { nodir: true, dot: true });
   return files
-    .map((file) => file.replace(path, ''))
-    .filter((file) => !file.endsWith(configFile))
-    .filter((file) => !file.endsWith(TEMPLATE_FILE_EXTENSION));
+    .map((file) => basename(file))
+    .filter((file) => !file.startsWith(CONFIG_FILE_NAME))
+    .filter((file) => !file.startsWith(TEMPLATE_FILE_PREFIX));
 };
 
-export const loadCustomAndBuiltInSnippets = (customSnippetsDir) => {
-  return [
-    ...loadSnippets(customSnippetsDir),
-    ...loadSnippets(DEFAULT_SNIPPETS_DIR),
-  ];
+export const loadCustomAndBuiltInSnippets = async (customSnippetsDir) => {
+  return await loadSnippets(customSnippetsDir);
 };
 
-export const loadSnippets = (contentDir = DEFAULT_SNIPPETS_DIR) => {
+export const loadSnippets = async (contentDir = DEFAULT_SNIPPETS_DIR) => {
   const foldersInContent = readdirSync(contentDir, { withFileTypes: true });
 
   if (foldersInContent.length === 0) return [];
 
-  const folders = foldersInContent
-    .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => ({
+  const folders = foldersInContent.filter((dirent) => dirent.isDirectory());
+
+  const snippets = [];
+
+  for (const dirent of folders) {
+    const snippet = {
       name: dirent.name,
       path: join(contentDir, dirent.name),
-      config: Object.assign(
-        {
-          name: dirent.name,
-        },
-        readSnippetConfig(join(contentDir, dirent.name)),
-      ),
+      config: await readSnippetConfig(join(contentDir, dirent.name)),
       files: readSnippetFiles(join(contentDir, dirent.name)),
-    }));
+    };
+    snippets.push(snippet);
+  }
 
-  return folders;
+  return snippets.filter((snippet) => snippet.config !== false);
 };
