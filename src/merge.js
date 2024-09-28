@@ -3,7 +3,14 @@ import { readFileSync, writeFileSync } from 'fs';
 import fse from 'fs-extra';
 
 import { jsonMerger, plainMerger } from './fileMergers.js';
-import { maybeReadFile } from './util.js';
+import {
+  maybeReadFile,
+  camelCase,
+  capitalize,
+  pascalCase,
+  toSlug,
+  toFilename,
+} from './util.js';
 import { createLogger } from './logger.js';
 
 const FILE_MERGERS = [
@@ -53,12 +60,22 @@ export const includeTemplate = (template, inputs) => {
 };
 
 const loadTemplate = (template, inputs) => {
+  const stringUtils = {
+    camelCase,
+    capitalize,
+    pascalCase,
+    toSlug,
+    toFilename,
+  };
+
   return {
     file:
-      typeof template.src === 'function' ? template.src(inputs) : template.src,
+      typeof template.src === 'function'
+        ? template.src(inputs, stringUtils)
+        : template.src,
     path:
       typeof template.dest === 'function'
-        ? template.dest(inputs)
+        ? template.dest(inputs, stringUtils)
         : template.dest,
   };
 };
@@ -71,6 +88,7 @@ export const mergeWithSnippet = (
   const snippetDir = snippet.path;
 
   (snippet.dependencies || []).forEach((dependency) => {
+    logger.debug(`Merging dependency ${dependency.name}`);
     mergeWithSnippet(dependency, inputs, { cwd });
   });
 
