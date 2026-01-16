@@ -44,12 +44,12 @@ export const newSnippet = resolveSnippet(
         initial: 'My Snippet',
       },
     ],
-    actions: ({ name, snippetsPath }, { toSlug }) => {
+    actions: ({ data, snippetsPath }, { toSlug }) => {
       return [
         {
           merger: 'overwrite',
           template: `export default {
-  name: '${name}',
+  name: '${data.name}',
   prompts: [],
   actions: () => {
     return [
@@ -61,7 +61,7 @@ export const newSnippet = resolveSnippet(
     ];
   }
 }`,
-          path: `${join(snippetsPath, toSlug(name))}/.lazy.config.ts`,
+          path: `${join(snippetsPath, toSlug(data.name))}/.lazy.config.ts`,
         },
       ];
     },

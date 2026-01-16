@@ -40,6 +40,21 @@ export const ensureParentDirectoryExists = async (path: string) => {
 };
 
 /**
+ * Tries to read a file and parse it as JSON.
+ * Returns null if the file does not exist or
+ * if parsing fails.
+ */
+export const maybeReadJSONFile = async <T>(path: string): Promise<T | null> => {
+  try {
+    const file = await readFile(path, 'utf8');
+    return JSON.parse(file) as T;
+  }
+  catch {
+    return null;
+  }
+}
+
+/**
  * Omits given keys from an object.
  */
 export const omit = <T extends object, K extends keyof T>(

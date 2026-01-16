@@ -4,13 +4,20 @@ import pkg from '../package.json';
 import { LAZY_DEFAULT_SNIPPETS_DIR } from './constants';
 import { loadSnippets, resolveActions, runActions } from './content';
 import { Context } from './context';
+import { detectEnvironment } from './environment';
 import { createLogger } from './logger';
 import { newSnippet } from './snippet';
 import { parseCLIArgs, pathExists } from './utils';
 
 export default async function main(argv: Array<string>) {
   const cli = parseCLIArgs<
-    { help?: boolean; path?: string; verbose?: boolean; version?: boolean },
+    {
+      help?: boolean;
+      new?: boolean;
+      path?: string;
+      verbose?: boolean;
+      version?: boolean;
+    },
     string
   >(argv, '');
 
@@ -35,6 +42,7 @@ export default async function main(argv: Array<string>) {
 
     Options
       --help      Show this help message
+      --new       Create a new snippet
       --path      Set path to snippets directory (~/.lazy-cli/snippets will be used by default)
       --verbose   Enable verbose logging
       --version   Show version number
@@ -60,18 +68,27 @@ export default async function main(argv: Array<string>) {
   const snippets = await loadSnippets(snippetsPath, ctx);
   logger.debug(`Found ${snippets.length} snippets in ${snippetsPath}`);
 
-  if (snippets.length === 0) {
-    panic(`No snippets found in ${snippetsPath}`);
+  // Select snippet to run
+  let selectedSnippetId = cli.command
+    ? cli.command
+    : cli.flags.new
+      ? 'new'
+      : undefined;
+
+  if (snippets.length === 0 && !selectedSnippetId) {
+    panic(`No snippets found in ${snippetsPath}.
+
+  You can create a new snippet using the --new flag.`);
     return;
   }
 
-  // Select snippet to run
-  let selectedSnippetId: string;
+  // Detect project environment
+  const projectContext = await detectEnvironment(process.cwd());
+  logger.info('Detected project environment');
+  logger.info(`Frameworks: ${projectContext.frameworks.join(', ') || 'None'}`);
+  logger.info(`Typescript: ${projectContext.typescript ? 'Yes' : 'No'}`);
 
-  if (cli.command !== '') {
-    selectedSnippetId = cli.command;
-    logger.debug(`Running snippet from CLI argument ${selectedSnippetId}`);
-  } else {
+  if (!selectedSnippetId) {
     const { value } = await prompts(
       {
         type: 'autocomplete',
@@ -121,7 +138,9 @@ export default async function main(argv: Array<string>) {
         process.exit(0);
       },
     });
-    filesToMerge.push(resolveActions(snippet, { ...data, snippetsPath }));
+    filesToMerge.push(
+      resolveActions(snippet, { data, snippetsPath, projectContext }),
+    );
   }
 
   // Merge all files with all actions
