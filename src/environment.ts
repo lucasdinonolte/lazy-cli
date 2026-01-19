@@ -1,16 +1,16 @@
-import { join } from 'path';
+import { join } from 'node:path';
 
 import { maybeReadJSONFile, pathExists } from './utils';
 
 type FrameworkDetector = {
   name: string;
-  detect: (allDeps: Record<string, string>) => Promise<boolean>;
+  detect: (allDeps: Record<string, string>) => boolean;
 };
 
 const frameworkDetectors: FrameworkDetector[] = [
   {
     name: 'astro',
-    detect: async (allDeps) => {
+    detect: (allDeps) => {
       if (allDeps['astro']) {
         return true;
       }
@@ -19,7 +19,7 @@ const frameworkDetectors: FrameworkDetector[] = [
   },
   {
     name: 'react',
-    detect: async (allDeps) => {
+    detect: (allDeps) => {
       if (allDeps['react'] || allDeps['react-dom']) {
         return true;
       }
@@ -28,7 +28,7 @@ const frameworkDetectors: FrameworkDetector[] = [
   },
   {
     name: 'vite',
-    detect: async (allDeps) => {
+    detect: (allDeps) => {
       if (allDeps['vite']) {
         return true;
       }
@@ -37,7 +37,7 @@ const frameworkDetectors: FrameworkDetector[] = [
   },
   {
     name: 'nextjs',
-    detect: async (allDeps) => {
+    detect: (allDeps) => {
       if (allDeps['next']) {
         return true;
       }
@@ -46,7 +46,7 @@ const frameworkDetectors: FrameworkDetector[] = [
   },
 ] as const;
 
-type Framework = (typeof frameworkDetectors)[number]['name'];
+type Framework = string;
 
 /**
  * Tries to determine the framework used in a project by
@@ -84,17 +84,19 @@ const detectFramework = async (
 const detectTypeScript = async (rootPath: string): Promise<boolean> => {
   const tsConfigPath = join(rootPath, 'tsconfig.json');
   return pathExists(tsConfigPath);
-}
+};
 
 /**
  * Detects the project's environment.
  */
-type ProjectContext = {
+export type ProjectContext = {
   frameworks: Framework[];
   typescript?: boolean;
 };
 
-export async function detectEnvironment(rootPath: string): Promise<ProjectContext> {
+export async function detectEnvironment(
+  rootPath: string,
+): Promise<ProjectContext> {
   const [frameworks, typescript] = await Promise.all([
     detectFramework(rootPath),
     detectTypeScript(rootPath),
@@ -102,6 +104,6 @@ export async function detectEnvironment(rootPath: string): Promise<ProjectContex
 
   return {
     frameworks,
-    typescript
+    typescript,
   };
 }

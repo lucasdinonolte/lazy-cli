@@ -1,6 +1,6 @@
 import deepmerge from 'deepmerge';
 
-type Merger = (target: string, source: string) => string;
+import type { Merger, MergerType } from './types';
 
 /**
  * Appends the `source` string to the `target` string, ensuring proper newline separation.
@@ -67,8 +67,6 @@ export const fileMergers = {
   overwrite,
   mergeJson,
 } as const;
-
-export type MergerType = keyof typeof fileMergers;
 
 export const getMergerForPath = (
   path: string,

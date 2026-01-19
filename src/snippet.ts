@@ -1,6 +1,6 @@
-import { join } from 'path';
+import { join } from 'node:path';
 
-import type { ResolvedSnippet, SnippetConfig } from './content';
+import type { ResolvedSnippet, SnippetConfig } from './types';
 
 export const createSnippet = ({
   name,
@@ -61,7 +61,7 @@ export const newSnippet = resolveSnippet(
     ];
   }
 }`,
-          path: `${join(snippetsPath, toSlug(data.name))}/.lazy.config.ts`,
+          path: join(snippetsPath, toSlug(data.name), '.lazy.config.ts'),
         },
       ];
     },

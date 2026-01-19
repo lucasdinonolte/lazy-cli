@@ -34,8 +34,11 @@ export const ensureParentDirectoryExists = async (path: string) => {
   try {
     const dir = dirname(path);
     await mkdir(dir, { recursive: true });
-  } catch {
-    // noop
+  } catch (e) {
+    // Ignore error if directory already exists
+    if ((e as NodeJS.ErrnoException).code !== 'EEXIST') {
+      throw e;
+    }
   }
 };
 
@@ -48,11 +51,10 @@ export const maybeReadJSONFile = async <T>(path: string): Promise<T | null> => {
   try {
     const file = await readFile(path, 'utf8');
     return JSON.parse(file) as T;
-  }
-  catch {
+  } catch {
     return null;
   }
-}
+};
 
 /**
  * Omits given keys from an object.

@@ -2,11 +2,17 @@ import prompts from 'prompts';
 
 import pkg from '../package.json';
 import { LAZY_DEFAULT_SNIPPETS_DIR } from './constants';
-import { loadSnippets, resolveActions, runActions } from './content';
+import {
+  loadSnippets,
+  resolveActions,
+  resolvePrompts,
+  runActions,
+} from './content';
 import { Context } from './context';
 import { detectEnvironment } from './environment';
 import { createLogger } from './logger';
 import { newSnippet } from './snippet';
+import { markSnippetsAsInstalled } from './state';
 import { parseCLIArgs, pathExists } from './utils';
 
 export default async function main(argv: Array<string>) {
@@ -38,7 +44,7 @@ export default async function main(argv: Array<string>) {
   if (cli.flags.help) {
     logger.log(`
     Usage
-      $ lazy [snippet]
+      $ lazy-cli [snippet]
 
     Options
       --help      Show this help message
@@ -132,7 +138,8 @@ export default async function main(argv: Array<string>) {
   // cancel out of the prompt at any stage, without
   // any of the previous dependencies being merged.
   for (const snippet of [...dependencies, selectedSnippet]) {
-    const data = await prompts(snippet.prompts, {
+    const resolvedPrompts = resolvePrompts(snippet, projectContext);
+    const data = await prompts(resolvedPrompts, {
       onCancel: () => {
         logger.info('Prompt cancelled, exiting...');
         process.exit(0);
@@ -150,6 +157,11 @@ export default async function main(argv: Array<string>) {
     }
     await runActions(files, ctx);
   }
+
+  await markSnippetsAsInstalled(
+    process.cwd(),
+    [...dependencies, selectedSnippet].map((s) => s.id),
+  );
 }
 
 export { createSnippet } from './snippet';
